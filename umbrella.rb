@@ -44,8 +44,6 @@ pirate_weather_url = "https://api.pirateweather.net/forecast/" + pirate_weather_
 # # Place a GET request to the URL
 raw_response = HTTP.get(pirate_weather_url)
 
-# require "json"
-
 parsed_response = JSON.parse(raw_response)
 
 currently_hash = parsed_response.fetch("currently")
@@ -59,3 +57,9 @@ hourly_summary = hourly_hash.fetch("summary")
 # current_summary = currently_hash.fetch("summary")
 
 puts "The current temperature is " + current_temp.to_s + ". " + "Weather for the next hour predicted to be " + hourly_summary + "."
+
+# Loop through the "data" sub-array of the "hourly_hash" 12 times
+# Use an if statement for each loop to check if the precipitaiton probability ("precipProbability") hash of the 'data' array is greater than 10% 
+# If it's greater, print a message saying how many hours from now AND what the actual precipProbability is
+# If any of next 12 hours has a precipitation probability greater than 10%, print "You might want to carry an umbrella!"
+# If not, print "You probably won't need an umbrella today."
