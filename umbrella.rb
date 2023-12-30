@@ -72,26 +72,3 @@ if will_need_umbrella
 else
   puts "You probably won't need an umbrella today."
 end
-
-# # Initialize the temperature array
-# precipitaiton_probabilities = []
-
-# hourly_data.each do |hour_data|
-#   precipitaiton_probabilities.push(hour_data["precipProbability"])
-# end
-
-# # Get precipProbabilites for the next tweleve hours
-
-# next_12_hours_precipitation_probabilites = []
-
-# for i in 0..11
-#   precipitation_probability = precipitaiton_probabilities[i]
-#   next_12_hours_precipitation_probabilites.push(precipitation_probability)
-# end
-
-# pp next_12_hours_precipitation_probabilites
-
-# Use an if statement for each loop to check if the precipitaiton probability ("precipProbability") hash of the 'data' array is greater than 10% 
-# If it's greater, print a message saying how many hours from now AND what the actual precipProbability is
-# If any of next 12 hours has a precipitation probability greater than 10%, print "You might want to carry an umbrella!"
-# If not, print "You probably won't need an umbrella today."
