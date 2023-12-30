@@ -1,64 +1,96 @@
 require "http"
 require "json"
+require "cgi"
 
-pp "Where are you located?"
+puts "========================================"
+puts "Will you need an umbrella today?"
+puts "========================================
+\n"
 
-user_location = gets.chomp.gsub(" ", "%20")
+puts "Where are you located?"
+# user_location = gets.chomp.gsub(" ", "%20")
+user_location = gets.chomp
 
-# pp user_location = "Chicago"
+encoded_location = CGI.escape(user_location)
 
-pp "Current location: " + user_location.gsub("%20", " ")
+# puts "Checking the weather at " + user_location.gsub("%20", " ") + "...."
+puts "Checking the weather at #{user_location}...."
 
 maps_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + user_location + "&key=" + ENV.fetch("GMAPS_KEY")
 
-resp = HTTP.get(maps_url)
+# resp = HTTP.get(maps_url)
+# raw_response = resp.to_s
 
-raw_response = resp.to_s
+parsed_response = JSON.parse(HTTP.get(maps_url))
 
-parsed_response = JSON.parse(raw_response)
+# results = parsed_response.fetch("results")
+# first_result = results.at(0)
 
-results = parsed_response.fetch("results")
+first_result = parsed_response.fetch("results").at(0)
 
-first_result = results.at(0)
+# geo = first_result.fetch("geometry")
+# loc = geo.fetch("location")
 
-geo = first_result.fetch("geometry")
+loc = first_result.fetch("geometry").fetch("location")
+latitude = loc.fetch("lat").to_s
+longitude = loc.fetch("lng").to_s
 
-loc = geo.fetch("location")
+puts "Your coordinates are #{latitude}, #{longitude}"
 
-latitude = loc.fetch("lat")
-longitude = loc.fetch("lng")
-
-# pp "Latitude: " + latitude.to_s + ", Longitude: " + longitude.to_s
-
-# # pp ENV.fetch("GMAPS_KEY")
 pirate_weather_api_key = ENV.fetch("PIRATE_WEATHER_KEY")
+# Assemble the full URL string by adding the first part, the API token, and the last part together
+pirate_weather_url = "https://api.pirateweather.net/forecast/#{pirate_weather_api_key}/#{latitude},#{longitude}"
 
-# # I've already created a string variable above: pirate_weather_api_key
-# # It contains sensitive credentials that hackers would love to steal so it is hidden for security reasons.
+# Place a GET request to the URL
+# raw_response = HTTP.get(pirate_weather_url)
 
-# require "http"
-
-# # Assemble the full URL string by adding the first part, the API token, and the last part together
-pirate_weather_url = "https://api.pirateweather.net/forecast/" + pirate_weather_api_key + "/" + latitude.to_s + "," + longitude.to_s
-
-# # Place a GET request to the URL
-raw_response = HTTP.get(pirate_weather_url)
-
-parsed_response = JSON.parse(raw_response)
+parsed_response = JSON.parse(HTTP.get(pirate_weather_url))
 
 currently_hash = parsed_response.fetch("currently")
-
 current_temp = currently_hash.fetch("temperature")
-
 hourly_hash = parsed_response.fetch("hourly")
-
 hourly_summary = hourly_hash.fetch("summary")
 
-# current_summary = currently_hash.fetch("summary")
+puts "It is currently #{current_temp}°F." 
+puts "Next hour: #{hourly_summary}."
 
-puts "The current temperature is " + current_temp.to_s + ". " + "Weather for the next hour predicted to be " + hourly_summary + "."
+hourly_data = hourly_hash.fetch("data")
+will_need_umbrella = false
 
-# Loop through the "data" sub-array of the "hourly_hash" 12 times
+hourly_data[0..11].each_with_index do |hour_data, index|
+  precipitation_probability = hour_data.fetch("precipProbability")
+  if precipitation_probability > 0.1
+    will_need_umbrella = true
+    puts "There's a high chance (#{precipitation_probability * 100}%) of precipitation in #{index + 1} hour(s)."
+  else
+    puts "There's a low chance (#{precipitation_probability * 100}%) of precipitation in #{index + 1} hour(s)."
+  end
+end
+
+if will_need_umbrella
+  puts "You might need an umbrella today!"
+else
+  puts "You probably won't need an umbrella today."
+end
+
+# # Initialize the temperature array
+# precipitaiton_probabilities = []
+
+# hourly_data.each do |hour_data|
+#   precipitaiton_probabilities.push(hour_data["precipProbability"])
+# end
+
+# # Get precipProbabilites for the next tweleve hours
+
+# next_12_hours_precipitation_probabilites = []
+
+# for i in 0..11
+#   precipitation_probability = precipitaiton_probabilities[i]
+#   next_12_hours_precipitation_probabilites.push(precipitation_probability)
+# end
+
+# pp next_12_hours_precipitation_probabilites
+
 # Use an if statement for each loop to check if the precipitaiton probability ("precipProbability") hash of the 'data' array is greater than 10% 
 # If it's greater, print a message saying how many hours from now AND what the actual precipProbability is
 # If any of next 12 hours has a precipitation probability greater than 10%, print "You might want to carry an umbrella!"
